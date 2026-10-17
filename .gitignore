@@ -1,0 +1,7 @@
+# 临时/缓存文件
+preview.png
+*.log
+.edge-*
+_*_tmp/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>个人学习工作台</title>
+<link rel="preconnect" href="https://fontsapi.zeoseven.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fontsapi.zeoseven.com/879/main/result.css">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAF6EF; --card:#FFFFFF; --line:#E8DFD0;
+  --ink:#3D3320; --ink2:#5A4D32; --ink3:#8A7D62; --ink4:#B0A488;
+  --accent:#97C459; --accent-soft:#EAF3DE; --accent-mid:#C0DD97; --accent-ink:#27500A;
+  --amber:#FAC775; --amber-soft:#FAEEDA; --amber-ink:#633806;
+  --blue:#85B7EB; --blue-soft:#EAF1FB;
+  --lav:#AFA9EC; --lav-soft:#EFEDFA;
+  --r-sm:8px; --r-md:12px; --r-lg:16px;
+  --shadow:0 4px 16px rgba(61,51,32,.06);
+  --shadow-lg:0 12px 32px rgba(61,51,32,.10);
+  --font:"NanxiXinyuanti","Nunito","LXGW Neo XiHei","微软雅黑",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:var(--font); background:var(--bg); color:var(--ink2);
+  font-size:14px; line-height:1.6; overflow-x:hidden; min-height:100vh;
+}
+#bg{position:fixed; inset:0; z-index:0; pointer-events:none}
+.app{position:relative; z-index:1; display:grid; grid-template-columns:230px minmax(0,1fr); min-height:100vh}
+
+/* ---------- Sidebar ---------- */
+.side{
+  padding:22px 16px; border-right:1px solid var(--line);
+  background:rgba(255,255,255,.55); backdrop-filter:blur(8px);
+  position:sticky; top:0; height:100vh; display:flex; flex-direction:column; gap:6px;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:4px 10px 18px}
+.brand .logo{
+  width:34px; height:34px; border-radius:10px; background:var(--accent); color:#fff;
+  display:grid; place-items:center; font-weight:800; font-size:18px; box-shadow:0 4px 12px rgba(151,196,89,.35);
+}
+.brand b{font-size:15px; color:var(--ink); font-weight:700}
+.nav{display:flex; flex-direction:column; gap:4px}
+.nav button{
+  display:flex; align-items:center; gap:10px; border:0; background:transparent; cursor:pointer;
+  padding:11px 12px; border-radius:var(--r-md); color:var(--ink3); font-family:var(--font);
+  font-size:14px; text-align:left; transition:background .2s,color .2s,transform .15s;
+}
+.nav button:hover{background:var(--accent-soft); color:var(--accent-ink)}
+.nav button.active{background:var(--accent); color:#fff; font-weight:700; box-shadow:0 6px 16px rgba(151,196,89,.32)}
+.nav button svg{flex:0 0 18px}
+.side .spacer{flex:1}
+.side .tools{display:flex; flex-direction:column; gap:6px}
+.side .tools button{
+  border:1px solid var(--line); background:var(--card); cursor:pointer; color:var(--ink3);
+  padding:9px; border-radius:var(--r-sm); font-family:var(--font); font-size:12px; transition:.2s;
+}
+.side .tools button:hover{border-color:var(--accent); color:var(--accent-ink)}
+
+/* ---------- Main ---------- */
+.main{padding:30px 34px 60px; max-width:1020px; width:100%; margin:0 auto}
+.panel{display:none}
+.panel.active{display:block; animation:fadeUp .38s ease}
+@keyframes fadeUp{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--r-lg);
+  padding:20px; box-shadow:var(--shadow); transition:transform .18s ease,box-shadow .18s ease;
+}
+.card.hoverable:hover{transform:translateY(-2px); box-shadow:var(--shadow-lg)}
+.card h3{margin:0 0 12px; font-size:14px; color:var(--ink); font-weight:700}
+.head-card{
+  display:flex; justify-content:space-between; align-items:center; gap:16px;
+  background:var(--card); border:1px solid var(--line); border-radius:var(--r-lg);
+  padding:22px 24px; box-shadow:var(--shadow); margin-bottom:18px; flex-wrap:wrap;
+}
+.head-card .date{font-size:22px; font-weight:800; color:var(--ink); letter-spacing:.5px}
+.head-card .sub{font-size:12px; color:var(--ink3); margin-top:2px}
+.bar{height:8px; border-radius:999px; background:var(--line); overflow:hidden; margin-top:8px; min-width:180px}
+.bar-fill{height:100%; border-radius:999px; background:var(--accent); width:0; transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.ring-text{font-size:12px; color:var(--ink3)} .ring-text b{color:var(--accent-ink); font-size:15px}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+
+/* tags & pills */
+.pill{display:inline-flex; align-items:center; gap:4px; padding:2px 10px; border-radius:999px; font-size:11px; font-weight:600; white-space:nowrap}
+.tag{font-size:11px; color:var(--ink4); margin-left:8px; font-weight:400}
+
+/* inputs */
+input[type=text],input[type=date],select,textarea{
+  font-family:var(--font); font-size:13px; color:var(--ink2);
+  border:1px solid var(--line); border-radius:var(--r-sm); background:#fff; padding:9px 11px; outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+textarea{width:100%; resize:vertical; min-height:64px}
+.btn{
+  border:0; cursor:pointer; background:var(--accent); color:#fff; font-family:var(--font);
+  font-weight:700; padding:9px 16px; border-radius:var(--r-sm); transition:transform .12s,filter .15s;
+  position:relative; overflow:hidden;
+}
+.btn:hover{filter:brightness(1.04)} .btn:active{transform:scale(.96)}
+.btn.ghost{background:var(--accent-soft); color:var(--accent-ink)}
+.btn.warn{background:#F6E7E1; color:#A3482F}
+
+/* tasks */
+.task-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px}
+.task{
+  display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--line);
+  border-radius:var(--r-md); background:#fff; transition:transform .15s,box-shadow .15s;
+}
+.task:hover{transform:translateY(-1px); box-shadow:var(--shadow)}
+.task.done{opacity:.62}
+.task.done .t-title{text-decoration:line-through; color:var(--ink3)}
+.check{
+  width:20px; height:20px; border-radius:7px; border:1.5px solid var(--line); background:#fff;
+  cursor:pointer; flex:0 0 20px; display:grid; place-items:center; transition:.18s;
+}
+.check svg{opacity:0; transform:scale(.4); transition:.18s}
+.task.done .check{background:var(--accent); border-color:var(--accent)}
+.task.done .check svg{opacity:1; transform:scale(1)}
+.t-body{flex:1; min-width:0}
+.t-title{color:var(--ink); font-weight:600}
+.t-meta{font-size:11px; color:var(--ink4)}
+.t-del{border:0; background:none; color:var(--ink4); cursor:pointer; padding:6px; border-radius:8px}
+.t-del:hover{color:#A3482F; background:#F6E7E1}
+.filters{display:flex; gap:6px; flex-wrap:wrap}
+.fchip{border:1px solid var(--line); background:#fff; color:var(--ink3); border-radius:999px; padding:3px 11px; font-size:12px; cursor:pointer; transition:.15s; font-family:var(--font)}
+.fchip.active{background:var(--accent); border-color:var(--accent); color:#fff}
+
+/* tabs */
+.tabs{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap}
+.tab{border:1px solid var(--line); background:#fff; color:var(--ink3); border-radius:999px; padding:7px 16px; cursor:pointer; font-family:var(--font); font-size:13px; transition:.18s}
+.tab.active{border-color:var(--accent); background:var(--accent); color:#fff; font-weight:700}
+
+/* exercise / github items */
+.ex-item,.gh-item{
+  display:flex; align-items:flex-start; gap:12px; padding:12px 14px; border:1px solid var(--line);
+  border-radius:var(--r-md); background:#fff; margin-bottom:8px; transition:transform .15s,box-shadow .15s;
+}
+.ex-item:hover,.gh-item:hover{transform:translateY(-1px); box-shadow:var(--shadow)}
+.ex-title{font-weight:600; color:var(--ink)}
+.ex-meta{font-size:11px; color:var(--ink4); margin-top:2px}
+.gh-item a{text-decoration:none; color:inherit; flex:1; min-width:0}
+.gh-name{font-weight:700; color:var(--ink)} .gh-name:hover{color:var(--accent-ink)}
+.gh-desc{font-size:12px; color:var(--ink3); margin-top:2px}
+.status{display:flex; gap:6px; align-items:center}
+.status button{border:0; background:none; cursor:pointer; font-size:12px; color:var(--ink4); padding:4px 8px; border-radius:8px; font-family:var(--font); transition:.15s}
+.status button.s1{color:var(--amber-ink); background:var(--amber-soft)}
+.status button.s2{color:#fff; background:var(--accent)}
+
+/* roadmap */
+.road-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px}
+.road-col{background:#fff; border:1px solid var(--line); border-radius:var(--r-lg); padding:16px; box-shadow:var(--shadow)}
+.road-col h4{margin:0 0 4px; font-size:14px; color:var(--ink)}
+.road-col .hint{font-size:11px; color:var(--ink4); margin:0 0 12px}
+.tree, .tree ul{list-style:none; margin:0; padding:0}
+.tree > li{margin:8px 0}
+.tree ul{margin:4px 0 8px 16px; padding-left:14px; border-left:1.5px solid var(--line)}
+.tree ul li{position:relative; margin:5px 0}
+.tree ul li::before{content:''; position:absolute; top:50%; left:-14px; width:14px; border-top:1.5px solid var(--line)}
+.tnode{
+  border:1px solid var(--line); background:#fff; color:var(--ink2); border-radius:999px;
+  padding:5px 13px; font-size:12.5px; cursor:pointer; font-family:var(--font); transition:all .15s;
+}
+.tnode:hover{border-color:var(--accent); background:var(--accent-soft); transform:translateY(-1px)}
+.tnode.branch{font-weight:700; color:var(--accent-ink); background:var(--accent-soft); border-color:transparent}
+.tnode.done{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700}
+
+/* review */
+.rv-form{display:flex; flex-direction:column; gap:12px; margin-bottom:18px}
+.rv-row label{font-size:12px; color:var(--ink3); display:block; margin-bottom:4px}
+.rv-item{border:1px solid var(--line); border-radius:var(--r-md); padding:14px; margin-bottom:10px; background:#fff}
+.rv-item .rv-date{font-size:11px; color:var(--ink4); font-weight:700}
+.rv-item p{margin:4px 0 0; font-size:13px}
+.mood-row{display:flex; gap:8px; flex-wrap:wrap}
+.mood{font-size:19px; padding:7px 14px; border:1px solid var(--line); border-radius:999px; background:#fff; cursor:pointer; transition:.15s; font-family:var(--font)}
+.mood span{font-size:11px; color:var(--ink3); margin-left:3px}
+.mood.active{border-color:var(--accent); background:var(--accent-soft); box-shadow:0 0 0 3px var(--accent-soft)}
+.stat-row{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px}
+.stat{background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:14px; text-align:center}
+.stat .num{font-size:26px; font-weight:800; color:var(--accent-ink); font-family:Nunito,var(--font)}
+.stat .lbl{font-size:11px; color:var(--ink4)}
+
+/* plan */
+.goal-card{display:flex; gap:14px; align-items:flex-start}
+.g-row{display:flex; gap:10px; align-items:center}
+.m-item{display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid var(--line); border-radius:var(--r-md); margin-bottom:8px; background:#fff}
+.m-item .days{margin-left:auto; font-weight:800; color:var(--accent-ink); font-size:14px; white-space:nowrap}
+.m-item .days.soon{color:var(--amber-ink)}
+
+/* library */
+.lib-item{
+  display:flex; align-items:flex-start; gap:12px; padding:13px 15px; border:1px solid var(--line);
+  border-radius:var(--r-md); background:#fff; margin-bottom:8px; transition:transform .15s,box-shadow .15s;
+}
+.lib-item:hover{transform:translateY(-1px); box-shadow:var(--shadow)}
+.lib-body{flex:1; min-width:0}
+.lib-name{font-weight:700; color:var(--ink); font-size:13px}
+.lib-name a{color:inherit; text-decoration:none}
+.lib-name a:hover{color:var(--accent-ink); text-decoration:underline}
+.lib-note{font-size:12px; color:var(--ink3); margin-top:2px}
+.lib-open{display:inline-flex; align-items:center; gap:3px; margin-left:8px; padding:2px 9px; border-radius:999px; background:var(--accent); color:#fff; font-size:11px; text-decoration:none; font-weight:700}
+.lib-open:hover{filter:brightness(1.05)}
+.lib-del{border:0; background:none; color:var(--ink4); cursor:pointer; padding:6px; border-radius:8px; flex:0 0 auto}
+.lib-del:hover{color:#A3482F; background:#F6E7E1}
+
+.toast{
+  position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px);
+  background:var(--ink); color:#fff; padding:10px 18px; border-radius:999px; font-size:13px;
+  opacity:0; pointer-events:none; transition:.3s; z-index:99;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+@media(max-width:860px){
+  .app{grid-template-columns:1fr}
+  .side{position:static; height:auto; flex-direction:row; flex-wrap:wrap; align-items:center; border-right:0; border-bottom:1px solid var(--line)}
+  .side .nav{flex-direction:row; flex-wrap:wrap}
+  .side .spacer{display:none}
+  .main{padding:20px 16px 50px}
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><span class="logo">学</span><b>个人学习工作台</b></div>
+    <nav class="nav" id="nav">
+      <button class="active" data-p="today"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="4"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>今日待办</button>
+      <button data-p="practice"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>练习中心</button>
+      <button data-p="library"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>资源库</button>
+      <button data-p="roadmap"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.6 1 1.4 1 2.5h6c0-1.1.3-1.9 1-2.5A6 6 0 0 0 12 3z"/></svg>成长线</button>
+      <button data-p="review"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg>回顾复盘</button>
+      <button data-p="plan"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg>规划</button>
+    </nav>
+    <div class="spacer"></div>
+    <div class="tools">
+      <button id="exportBtn">导出数据</button>
+      <button id="importBtn">导入数据</button>
+      <button id="resetBtn">重置内置内容</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- 今日待办 -->
+    <section class="panel active" id="panel-today">
+      <div class="head-card">
+        <div>
+          <div class="date" id="todayDate"></div>
+          <div class="sub" id="todayMeta">新的一天，从今天开始</div>
+        </div>
+        <div>
+          <div class="ring-text"><b id="doneCount">0</b> / <span id="totalCount">0</span> 项已完成</div>
+          <div class="bar"><div class="bar-fill" id="todayBar"></div></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:18px">
+        <h3>快速添加待办</h3>
+        <form id="taskForm" class="rv-form" style="margin-bottom:0">
+          <input type="text" id="taskText" placeholder="例如：完成高数第3章课后题" autocomplete="off">
+          <div class="g-row">
+            <select id="taskSub">
+              <option value="math">高数</option>
+              <option value="c" selected>C语言</option>
+              <option value="en">英语</option>
+              <option value="phys">大学物理</option>
+              <option value="other">其他</option>
+            </select>
+            <button class="btn" type="submit">添加</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="margin:0">待办清单</h3>
+          <div class="filters" id="taskFilters"></div>
+        </div>
+        <ul class="task-list" id="taskList"></ul>
+      </div>
+    </section>
+
+    <!-- 练习中心 -->
+    <section class="panel" id="panel-practice">
+      <div class="head-card"><div><div class="date" style="font-size:20px">练习中心</div><div class="sub">多课题目练习 · 完成状态会保存</div></div></div>
+      <div class="tabs" id="practiceTabs"></div>
+      <div id="practiceBody"></div>
+    </section>
+
+    <!-- 资源库 -->
+    <section class="panel" id="panel-library">
+      <div class="head-card">
+        <div><div class="date" style="font-size:20px">资源库</div><div class="sub">课程资料 · 参考书 · 教程 · 模板 · 项目（全带链接）</div></div>
+      </div>
+      <div class="tabs" id="libTabs"></div>
+      <div class="card">
+        <h3>添加资源</h3>
+        <div class="g-row" style="flex-wrap:wrap">
+          <input type="text" id="libName" placeholder="名称 / 标题" style="flex:1;min-width:160px">
+          <select id="libCat">
+            <option value="material">课程资料</option><option value="book">参考书</option>
+            <option value="tut">教程</option><option value="tpl">模板</option><option value="proj">项目</option>
+          </select>
+          <input type="text" id="libLink" placeholder="链接（可选）" style="width:180px">
+          <input type="text" id="libNote" placeholder="备注（可选）" style="width:150px">
+          <button class="btn" id="libAdd">添加</button>
+        </div>
+        <div style="font-size:11px;color:var(--ink4);margin-top:8px">每条资源都可带链接，点击卡片上的「打开 ↗」直达；也支持填文件路径或网盘链接。</div>
+      </div>
+      <div id="libList" style="margin-top:18px"></div>
+    </section>
+
+    <!-- 成长线 -->
+    <section class="panel" id="panel-roadmap">
+      <div class="head-card"><div><div class="date" style="font-size:20px">技能成长线</div><div class="sub">点击节点标记完成 · 绿色 = 已掌握</div></div></div>
+      <div class="road-grid" id="roadGrid"></div>
+    </section>
+
+    <!-- 回顾复盘 -->
+    <section class="panel" id="panel-review">
+      <div class="head-card"><div><div class="date" style="font-size:20px">回顾与复盘</div><div class="sub">每周一次，看清自己走了多远</div></div></div>
+      <div class="stat-row" id="statRow"></div>
+      <div class="card">
+        <h3>本周小复盘</h3>
+        <div class="rv-form">
+          <div class="rv-row"><label>本周状态（点一个）</label><div class="mood-row" id="moodRow"></div></div>
+          <div class="rv-row"><label>✨ 最有成就感的一件事</label><input type="text" id="rvWin" placeholder="哪怕很小，也算数" autocomplete="off"></div>
+          <div class="rv-row"><label>🧗 卡住的点</label><input type="text" id="rvStuck" placeholder="哪里学不动了？" autocomplete="off"></div>
+          <div class="rv-row"><label>🎯 下周只做一件事</label><input type="text" id="rvNext" placeholder="聚焦一个重点，别贪多" autocomplete="off"></div>
+          <div class="g-row"><button class="btn" id="rvSave">保存复盘</button><button class="btn ghost" id="rvClear">清空</button></div>
+        </div>
+      </div>
+      <div id="reviewHistory" style="margin-top:18px"></div>
+    </section>
+
+    <!-- 规划 -->
+    <section class="panel" id="panel-plan">
+      <div class="head-card"><div><div class="date" style="font-size:20px">近期与长期规划</div><div class="sub">目标 + 里程碑 + 倒计时</div></div></div>
+      <div class="grid2">
+        <div class="card">
+          <h3>近期目标（本学期）</h3>
+          <div id="nearGoals"></div>
+          <div class="g-row" style="margin-top:10px"><input type="text" id="nearInput" placeholder="新增近期目标"><button class="btn ghost" id="nearAdd">+</button></div>
+        </div>
+        <div class="card">
+          <h3>长期目标（大一结束 / 竞赛）</h3>
+          <div id="farGoals"></div>
+          <div class="g-row" style="margin-top:10px"><input type="text" id="farInput" placeholder="新增长期目标"><button class="btn ghost" id="farAdd">+</button></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h3>里程碑与倒计时</h3>
+        <div id="milestones"></div>
+        <div class="g-row" style="margin-top:10px;flex-wrap:wrap">
+          <input type="text" id="msText" placeholder="例如：英语四级考试">
+          <input type="date" id="msDate">
+          <button class="btn ghost" id="msAdd">添加里程碑</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+<input type="file" id="importFile" accept="application/json" hidden>
+
+<script>
+const SUB={
+  math:{name:'高数',color:'#85B7EB',soft:'#EAF1FB'},
+  c:{name:'C语言',color:'#97C459',soft:'#EAF3DE'},
+  en:{name:'英语',color:'#FAC775',soft:'#FAEEDA'},
+  phys:{name:'大学物理',color:'#6BB5A6',soft:'#E7F5F1'},
+  other:{name:'其他',color:'#8A7D62',soft:'#F1EDE4'}
+};
+const SEED_EX=[
+  {id:'c1',sub:'c',title:'翁恺《程序设计入门——C语言》第1-4讲',diff:'入门',tag:'中国大学MOOC'},
+  {id:'c2',sub:'c',title:'洛谷入门题单：顺序结构 10 题',diff:'入门',tag:'洛谷'},
+  {id:'c3',sub:'c',title:'洛谷入门题单：分支与循环 10 题',diff:'入门',tag:'洛谷'},
+  {id:'c4',sub:'c',title:'指针专题：指针与数组的关系',diff:'进阶',tag:'教材课后题'},
+  {id:'c5',sub:'c',title:'结构体与链表：学生成绩管理小程序',diff:'进阶',tag:'练手项目'},
+  {id:'m1',sub:'math',title:'同济高数：极限与连续 课后题',diff:'入门',tag:'教材'},
+  {id:'m2',sub:'math',title:'导数与微分 同步练习',diff:'入门',tag:'同步练习'},
+  {id:'m3',sub:'math',title:'宋浩高数：导数章节视频 + 笔记',diff:'入门',tag:'B站'},
+  {id:'e1',sub:'en',title:'CET-4 核心词汇 每日 30 词',diff:'日常',tag:'墨墨背单词'},
+  {id:'e2',sub:'en',title:'四级真题：阅读理解 1 篇',diff:'入门',tag:'真题'},
+  {id:'e3',sub:'en',title:'VOA 慢速英语 精听 1 篇',diff:'日常',tag:'每日英语听力'},
+  {id:'p1',sub:'phys',title:'力学：质点运动与牛顿定律 课后题',diff:'入门',tag:'教材'},
+  {id:'p2',sub:'phys',title:'力学：能量与动量 同步练习',diff:'入门',tag:'同步练习'},
+  {id:'p3',sub:'phys',title:'电磁学：静电场 预习 + 笔记',diff:'入门',tag:'教材'},
+  {id:'p4',sub:'phys',title:'物理实验：完成实验报告',diff:'入门',tag:'实验'}
+];
+const SEED_GH=[
+  {id:'g1',sub:'c',name:'TheAlgorithms/C',desc:'C 语言算法与数据结构实现大全，适合对照学习',url:'https://github.com/TheAlgorithms/C',diff:'进阶'},
+  {id:'g2',sub:'c',name:'rby90/project-based-tutorials-in-c',desc:'跟着项目学 C 的教程合集（游戏/工具等）',url:'https://github.com/rby90/project-based-tutorials-in-c',diff:'入门'},
+  {id:'g3',sub:'c',name:'koz.ross/awesome-c',desc:'C 语言资源清单（库、教程、书籍）',url:'https://github.com/koz.ross/awesome-c',diff:'参考'},
+  {id:'g8',sub:'c',name:'antirez/kilo',desc:'约 1000 行 C 实现的文本编辑器，精读经典',url:'https://github.com/antirez/kilo',diff:'进阶'}
+];
+const ROAD_TREES=[
+  {key:'c',title:'C 语言',hint:'专业主线',nodes:[
+    {id:'e1',label:'基础语法',children:[{id:'e11',label:'语法与流程'},{id:'e12',label:'函数与数组'}]},
+    {id:'e4',label:'进阶',children:[{id:'e13',label:'指针'},{id:'e14',label:'结构体与文件'}]}
+  ]},
+  {key:'math',title:'高等数学',hint:'跟紧课堂节奏',nodes:[
+    {id:'m1',label:'一元微积分',children:[{id:'m11',label:'极限与连续'},{id:'m12',label:'导数与微分'},{id:'m13',label:'中值定理'},{id:'m14',label:'不定积分'},{id:'m15',label:'定积分'}]},
+    {id:'m2',label:'多元与级数',children:[{id:'m21',label:'常微分方程'},{id:'m22',label:'多元函数'},{id:'m23',label:'无穷级数'}]}
+  ]},
+  {key:'phys',title:'大学物理',hint:'跟紧课堂 + 实验',nodes:[
+    {id:'p1',label:'力学',children:[{id:'p11',label:'质点运动'},{id:'p12',label:'牛顿定律'},{id:'p13',label:'能量与动量'}]},
+    {id:'p2',label:'电磁学',children:[{id:'p21',label:'静电场'},{id:'p22',label:'稳恒磁场'},{id:'p23',label:'电磁感应'}]}
+  ]},
+  {key:'ai',title:'AI 素养',hint:'长期线',nodes:[
+    {id:'a1',label:'编程基础',children:[{id:'a11',label:'Python 语法'},{id:'a12',label:'NumPy / Pandas'}]},
+    {id:'a2',label:'数学基础',children:[{id:'a21',label:'线性代数'},{id:'a22',label:'概率统计'}]},
+    {id:'a3',label:'机器学习',children:[{id:'a31',label:'吴恩达 ML'},{id:'a32',label:'小项目实战'}]}
+  ]}
+];
+const SEED_GOALS={
+  near:['高数跟住课堂，课后题不欠账','C 语言学完指针与结构体','每天 30 个四级单词'],
+  far:['大一过英语四级','大学物理跟住课堂','坚持 AI 素养学习']
+};
+const SEED_MS=[
+  {id:'ms1',text:'英语四级考试 (CET-4)',date:'2026-12-19'},
+  {id:'ms2',text:'大一期中考试',date:'2026-11-15'},
+  {id:'ms3',text:'期末复习周',date:'2027-01-10'}
+];
+
+const DAY_NAMES=['','周一','周二','周三','周四','周五','周六','周日'];
+const TIMETABLE_SEED={
+  sem:'2026-09-21',
+  w:{
+    4:{1:['高等数学（基）|二教20|岳瑞锋','电气软件程序设计|计算中心3|于明'],2:['综合英语|一教10|杨惠媛','体育武术（男）|看台','高等数学（基）|二教20|岳瑞锋','物理学A|二教30|史旭光'],3:['电气软件程序设计|二教50|于明','中共党史|二教20|周景勇','电气软件程序设计|计算中心|于明'],4:['物理学实验A-1|基础楼302|孙阳','电气软件程序设计|二教40|于明','中国近现代史纲要|二教60|张博'],5:['高等数学（基）|二教20|岳瑞锋','综合英语|一教20|杨惠媛','物理学A|二教50|史旭光','电气工程导论|二教50|张军国','物理与人类文明|二教60|高伟'],6:['程序设计与算法入门|一教10|徐艳艳'],7:['程序设计与算法入门|计算中心|徐艳艳']},
+    5:{1:['高等数学（基）|二教20|岳瑞锋','电气软件程序设计|计算中心3|于明'],2:['综合英语|一教10|杨惠媛','体育武术（男）|看台','高等数学（基）|二教20|岳瑞锋','物理学A|二教30|史旭光'],3:['电气软件程序设计|二教50|于明','中共党史|二教20|周景勇','电气软件程序设计|计算中心|于明'],4:['物理学实验A-1|基础楼302|孙阳','电气软件程序设计|二教40|于明','中国近现代史纲要|二教60|张博'],5:['高等数学（基）|二教20|岳瑞锋','综合英语|一教20|杨惠媛','物理学A|二教50|史旭光','大学生心理健康|二教20|李立言','物理与人类文明|二教60|高伟'],6:['程序设计与算法入门|一教10|徐艳艳'],7:['程序设计与算法入门|计算中心|徐艳艳']},
+    6:{1:['高等数学（基）|二教20|岳瑞锋','电气软件程序设计|计算中心3|于明'],2:['综合英语|一教10|杨惠媛','体育武术（男）|看台','高等数学（基）|二教20|岳瑞锋','物理学A|二教30|史旭光'],3:['电气软件程序设计|二教50|于明','中共党史|二教20|周景勇','电气软件程序设计|计算中心|于明'],4:['物理学实验A-1|基础楼302|孙阳','电气软件程序设计|二教40|于明','中国近现代史纲要|二教60|张博'],5:['高等数学（基）|二教20|岳瑞锋','综合英语|一教20|杨惠媛','物理学A|二教50|史旭光','大学生心理健康|二教20|李立言','物理与人类文明|二教60|高伟'],6:['程序设计与算法入门|一教10|徐艳艳'],7:['程序设计与算法入门|计算中心|徐艳艳']},
+    7:{1:['电气软件程序设计|计算中心3|于明'],2:['电气软件程序设计|二教50|于明','体育武术（男）|看台','物理学A|二教30|史旭光'],3:['中共党史|二教20|周景勇','电气软件程序设计|计算中心|于明'],4:['物理学实验A-1|基础楼302|孙阳','电气软件程序设计|二教40|于明','中国近现代史纲要|二教60|张博'],5:['物理学A|二教50|史旭光','大学生心理健康|二教20|李立言','物理与人类文明|二教60|高伟'],6:['程序设计与算法入门|一教10|徐艳艳'],7:['程序设计与算法入门|计算中心|徐艳艳']},
+    8:{1:['高等数学（基）|二教20|岳瑞锋','电气软件程序设计|计算中心3|于明'],2:['电气软件程序设计|二教50|于明','体育武术（男）|看台','高等数学（基）|二教20|岳瑞锋','物理学A|二教30|史旭光'],3:['中共党史|二教20|周景勇'],4:['物理学实验A-1|基础楼302|孙阳','综合英语|一教20|杨惠媛','中国近现代史纲要|二教60|张博'],5:['高等数学（基）|二教20|岳瑞锋','综合英语|一教20|杨惠媛','物理学A|二教50|史旭光','大学生心理健康|二教20|李立言','物理与人类文明|二教60|高伟'],6:['程序设计与算法入门|一教10|徐艳艳'],7:['程序设计与算法入门|计算中心|徐艳艳']},
+    9:{1:['高等数学（基）|二教20|岳瑞锋','电气软件程序设计|计算中心3|于明'],2:['电气软件程序设计|二教50|于明','体育武术（男）|看台','高等数学（基）|二教20|岳瑞锋','物理学A|二教30|史旭光'],3:['中共党史|二教20|周景勇'],4:['物理学实验A-1|基础楼302|孙阳','综合英语|一教20|杨惠媛','中国近现代史纲要|二教60|张博'],5:['高等数学（基）|二教20|岳瑞锋','综合英语|一教20|杨惠媛','物理学A|二教50|史旭光','大学生心理健康|二教20|李立言','物理与人类文明|二教60|高伟'],6:['程序设计与算法入门|一教10|徐艳艳'],7:['程序设计与算法入门|计算中心|徐艳艳']},
+    10:{1:['高等数学（基）|二教20|岳瑞锋'],2:['体育武术（男）|看台','高等数学（基）|二教20|岳瑞锋','物理学A|二教30|史旭光'],4:['中国近现代史纲要|二教60|张博'],5:['高等数学（基）|二教20|岳瑞锋','物理学A|二教50|史旭光','物理与人类文明|二教60|高伟'],6:['程序设计与算法入门|一教10|徐艳艳'],7:['程序设计与算法入门|计算中心|徐艳艳']},
+    11:{1:['高等数学（基）|二教20|岳瑞锋'],2:['体育武术（男）|看台','高等数学（基）|二教20|岳瑞锋','物理学A|二教30|史旭光'],4:['中国近现代史纲要|二教60|张博'],5:['高等数学（基）|二教20|岳瑞锋','物理学A|二教50|史旭光','形势与政策|二教30','物理与人类文明|二教60|高伟']},
+    12:{1:['高等数学（基）|二教20|岳瑞锋'],2:['体育武术（男）|看台','高等数学（基）|二教20|岳瑞锋','物理学A|二教30|史旭光'],4:['综合英语|一教20|杨惠媛','中国近现代史纲要|二教60|张博'],5:['高等数学（基）|二教20|岳瑞锋','综合英语|一教20|杨惠媛','物理学A|二教50|史旭光','形势与政策|二教30']},
+    13:{1:['高等数学（基）|二教20|岳瑞锋'],2:['体育武术（男）|看台','高等数学（基）|二教20|岳瑞锋','物理学A|二教30|史旭光'],3:['中国近现代史纲要|二教10|张博'],4:['中国近现代史纲要|二教60|张博'],5:['高等数学（基）|二教20|岳瑞锋','物理学A|二教50|史旭光']},
+    14:{1:['高等数学（基）|二教20|岳瑞锋'],2:['高等数学（基）|二教20|岳瑞锋','物理学A|二教30|史旭光'],3:['中国近现代史纲要|二教10|张博'],4:['物理学A|二教20|史旭光','中国近现代史纲要|二教60|张博'],5:['高等数学（基）|二教20|岳瑞锋','物理学A|二教50|史旭光']},
+    15:{1:['高等数学（基）|二教20|岳瑞锋'],2:['高等数学（基）|二教20|岳瑞锋','物理学A|二教30|史旭光'],3:['中国近现代史纲要|二教10|张博'],4:['物理学A|二教20|史旭光','中国近现代史纲要|二教60|张博']},
+    16:{2:['物理学A|二教30|史旭光'],3:['中国近现代史纲要|二教10|张博'],4:['物理学A|二教20|史旭光'],5:['物理学A|二教50|史旭光']}
+  }
+};
+const LIB_CATS={all:'全部',material:'课程资料',book:'参考书',tut:'教程',tpl:'模板',proj:'项目'};
+const SEED_LIBRARY=[
+  {id:'t1',cat:'tut',name:'翁恺《程序设计入门——C语言》',link:'https://www.icourse163.org/search.htm?search=%E7%BF%81%E6%81%BA',note:'中国大学MOOC'},
+  {id:'t2',cat:'tut',name:'宋浩高等数学',link:'https://search.bilibili.com/all?keyword=%E5%AE%8B%E6%B5%A9%E9%AB%98%E7%AD%89%E6%95%B0%E5%AD%A6',note:'B站同步课'},
+  {id:'t3',cat:'tut',name:'3Blue1Brown《微积分的本质》',link:'https://search.bilibili.com/all?keyword=%E5%BE%AE%E7%A7%AF%E5%88%86%E7%9A%84%E6%9C%AC%E8%B4%A8',note:'建立数学直觉'},
+  {id:'t4',cat:'tut',name:'大学物理 同步课',link:'https://search.bilibili.com/all?keyword=%E5%A4%A7%E5%AD%A6%E7%89%A9%E7%90%86',note:'B站'},
+  {id:'t5',cat:'tut',name:'大学物理 MOOC',link:'https://www.icourse163.org/search.htm?search=%E5%A4%A7%E5%AD%A6%E7%89%A9%E7%90%86',note:'中国大学MOOC'},
+  {id:'t6',cat:'tut',name:'廖雪峰 Python 教程',link:'https://liaoxuefeng.com/',note:'AI方向预备'},
+  {id:'t7',cat:'tut',name:'吴恩达机器学习',link:'https://www.coursera.org/specializations/machine-learning-introduction',note:'Coursera 中文字幕'},
+  {id:'b1',cat:'book',name:'《高等数学》同济版',link:'https://search.jd.com/Search?keyword=%E9%AB%98%E7%AD%89%E6%95%B0%E5%AD%A6%20%E5%90%8C%E6%B5%8E',note:'主教材'},
+  {id:'b2',cat:'book',name:'《C Primer Plus》（第6版）',link:'https://search.jd.com/Search?keyword=C%20Primer%20Plus',note:'C语言参考书'},
+  {id:'b3',cat:'book',name:'《C和指针》',link:'https://search.jd.com/Search?keyword=C%E5%92%8C%E6%8C%87%E9%92%88',note:'指针进阶'},
+  {id:'b4',cat:'book',name:'《大学物理》教材',link:'https://search.jd.com/Search?keyword=%E5%A4%A7%E5%AD%A6%E7%89%A9%E7%90%86%20%E6%95%99%E6%9D%90',note:'跟课堂教材'},
+  {id:'b5',cat:'book',name:'英语四级真题',link:'https://search.jd.com/Search?keyword=%E8%8B%B1%E8%AF%AD%E5%9B%9B%E7%BA%A7%E7%9C%9F%E9%A2%98',note:'星火 / 新东方'},
+  {id:'m1',cat:'material',name:'中国大学MOOC 首页',link:'https://www.icourse163.org/',note:'找各科课程'},
+  {id:'m2',cat:'material',name:'洛谷 Luogu',link:'https://www.luogu.com.cn/',note:'C 语言刷题'},
+  {id:'m3',cat:'material',name:'PTA 编程题平台',link:'https://pintia.cn/',note:'编程题练习'},
+  {id:'p1',cat:'tpl',name:'Notion 学生模板库',link:'https://www.notion.com/templates/category/students',note:'学习计划 / 笔记模板'},
+  {id:'p2',cat:'tpl',name:'语雀模板中心',link:'https://www.yuque.com/templates',note:'笔记 / 计划模板'},
+  {id:'g1',cat:'proj',name:'TheAlgorithms/C',link:'https://github.com/TheAlgorithms/C',note:'C 算法实现大全 · 对照学习'},
+  {id:'g2',cat:'proj',name:'antirez/kilo',link:'https://github.com/antirez/kilo',note:'约 1000 行 C 文本编辑器 · 精读'},
+  {id:'g3',cat:'proj',name:'rby90/project-based-tutorials-in-c',link:'https://github.com/rby90/project-based-tutorials-in-c',note:'跟着项目学 C'},
+  {id:'g4',cat:'proj',name:'koz.ross/awesome-c',link:'https://github.com/koz.ross/awesome-c',note:'C 语言资源清单'},
+  {id:'j1',cat:'proj',name:'控制台贪吃蛇（C语言）',link:'https://github.com/search?q=snake+c+console&type=repositories',note:'练手 · 二维数组 + 循环'},
+  {id:'j2',cat:'proj',name:'学生成绩管理系统（链表）',link:'https://github.com/search?q=student+management+c+linked+list&type=repositories',note:'练手 · 结构体 + 链表 + 文件'}
+];
+const LS={tasks:'wb_tasks',ex:'wb_ex',road:'wb_road',reviews:'wb_reviews',goals:'wb_goals',library:'wb_library'};
+const load=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}};
+const save=(k,v)=>{localStorage.setItem(k,JSON.stringify(v));};
+const LIB_VERSION='2';
+function loadLibrary(){
+  if(localStorage.getItem('wb_lib_ver')===LIB_VERSION){const d=load(LS.library,null);if(Array.isArray(d))return d;}
+  localStorage.setItem('wb_lib_ver',LIB_VERSION);
+  return JSON.parse(JSON.stringify(SEED_LIBRARY));
+}
+const state={
+  tasks:load(LS.tasks,[]),
+  ex:load(LS.ex,{}),
+  road:load(LS.road,{}),
+  reviews:load(LS.reviews,[]),
+  goals:load(LS.goals,{near:SEED_GOALS.near,far:SEED_GOALS.far,ms:SEED_MS}),
+  library:loadLibrary()
+};
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+let uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800);}
+
+/* ---------- particles (canvas, zero-dep) ---------- */
+const cv=$('#bg'),ctx=cv.getContext('2d');
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let W=0,H=0,P=[];
+const PCOLORS=['151,196,89','250,199,117','133,183,235','175,169,236'];
+function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+function makeP(x,y,burst){const n=burst?18:1;
+  for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,sp=burst?(1+Math.random()*3):(0.2+Math.random()*0.35);
+    P.push({x:x??Math.random()*W,y:y??Math.random()*H,r:(burst?1.4:0.8)+Math.random()*1.6,
+      vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:burst?60+Math.random()*40:Infinity,
+      c:PCOLORS[(Math.random()*PCOLORS.length)|0],a:0.08+Math.random()*0.22});}}
+function seed(n){P=[];for(let i=0;i<n;i++)makeP();}
+function tick(){
+  ctx.clearRect(0,0,W,H);
+  for(let i=P.length-1;i>=0;i--){const p=P[i];
+    if(p.life!==Infinity){p.life--;if(p.life<=0){P.splice(i,1);continue;}p.vx*=0.97;p.vy*=0.97;}
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<-10)p.x=W+10;if(p.x>W+10)p.x=-10;if(p.y<-10)p.y=H+10;if(p.y>H+10)p.y=-10;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(${p.c},${p.a})`;ctx.fill();}
+  if(P.length<46)makeP();
+  if(!document.hidden)requestAnimationFrame(tick);
+}
+addEventListener('resize',resize);
+if(!reduced){resize();seed(46);requestAnimationFrame(tick);}
+document.addEventListener('pointerdown',e=>{if(reduced)return;makeP(e.clientX,e.clientY,true);});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!reduced)requestAnimationFrame(tick);});
+
+/* ---------- ripple on click ---------- */
+document.addEventListener('pointerdown',e=>{
+  const el=e.target.closest('.btn,.tab,.fchip,.tnode,.task,.gh-item,.lib-item,.mood');
+  if(!el)return;
+  const r=el.getBoundingClientRect();
+  const s=document.createElement('span');
+  const d=Math.max(r.width,r.height);
+  s.style.cssText=`position:absolute;left:${e.clientX-r.left-d/2}px;top:${e.clientY-r.top-d/2}px;width:${d}px;height:${d}px;border-radius:50%;background:rgba(151,196,89,.22);transform:scale(0);pointer-events:none;`;
+  el.style.position=el.style.position||'relative';el.style.overflow='hidden';el.appendChild(s);
+  s.animate([{transform:'scale(0)',opacity:1},{transform:'scale(1)',opacity:0}],{duration:450,easing:'ease-out'}).onfinish=()=>s.remove();
+});
+
+/* ---------- nav ---------- */
+$$('#nav button').forEach(b=>b.addEventListener('click',()=>{
+  $$('#nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  $$('.panel').forEach(p=>p.classList.remove('active'));
+  $('#panel-'+b.dataset.p).classList.add('active');
+}));
+
+/* ---------- today ---------- */
+function fmtDate(){const d=new Date();const w=['日','一','二','三','四','五','六'];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 星期${w[d.getDay()]}`;}
+function renderFilters(){
+  const keys=['all',...Object.keys(SUB)];
+  const cur=state._filter||'all';
+  $('#taskFilters').innerHTML=keys.map(k=>`<button class="fchip ${cur===k?'active':''}" data-f="${k}">${k==='all'?'全部':SUB[k].name}</button>`).join('');
+  $$('#taskFilters .fchip').forEach(b=>b.addEventListener('click',()=>{state._filter=b.dataset.f;renderFilters();renderTasks();}));
+}
+function renderTasks(){
+  const f=state._filter||'all';
+  const list=state.tasks.filter(t=>f==='all'||t.sub===f);
+  const el=$('#taskList');
+  if(!list.length){el.innerHTML='<div style="color:var(--ink4);text-align:center;padding:20px 0">暂无待办，从右上角添加一件小事开始吧 ✨</div>';}
+  else el.innerHTML=list.map(t=>{
+    const s=SUB[t.sub]||SUB.other;
+    return `<li class="task ${t.done?'done':''}" data-id="${t.id}">
+      <span class="check" data-act="toggle">${t.done?'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>':''}</span>
+      <div class="t-body"><div class="t-title">${t.text}</div><div class="t-meta">${s.name}</div></div>
+      <span class="pill" style="background:${s.soft};color:${s.color}">${s.name}</span>
+      <button class="t-del" data-act="del" title="删除"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
+    </li>`;}).join('');
+  const done=state.tasks.filter(t=>t.done).length,tot=state.tasks.length;
+  $('#doneCount').textContent=done;$('#totalCount').textContent=tot;
+  $('#todayBar').style.width=tot?`${Math.round(done/tot*100)}%`:'0%';
+}
+$('#taskForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const text=$('#taskText').value.trim();if(!text)return;
+  state.tasks.unshift({id:uid(),text,sub:$('#taskSub').value,done:false,ts:Date.now()});
+  save(LS.tasks,state.tasks);$('#taskText').value='';renderTasks();toast('已添加待办');
+});
+$('#taskList').addEventListener('click',e=>{
+  const li=e.target.closest('.task');if(!li)return;const id=li.dataset.id;
+  const act=e.target.closest('[data-act]')?.dataset.act;
+  if(act==='del'){state.tasks=state.tasks.filter(t=>t.id!==id);save(LS.tasks,state.tasks);renderTasks();toast('已删除');}
+  else{const t=state.tasks.find(t=>t.id===id);if(t){t.done=!t.done;save(LS.tasks,state.tasks);renderTasks();if(t.done)toast('完成 ✅');}}
+});
+
+/* ---------- practice ---------- */
+function renderPracticeTabs(){
+  const keys=['c','math','en','phys'];
+  const cur=state._sub||'c';
+  $('#practiceTabs').innerHTML=keys.map(k=>`<button class="tab ${cur===k?'active':''}" data-sub="${k}">${SUB[k].name}</button>`).join('');
+  $$('#practiceTabs .tab').forEach(b=>b.addEventListener('click',()=>{state._sub=b.dataset.sub;renderPracticeTabs();renderPractice();}));
+}
+function renderPractice(){
+  const sub=state._sub||'c';
+  const ex=SEED_EX.filter(x=>x.sub===sub);
+  const gh=SEED_GH.filter(x=>x.sub===sub);
+  $('#practiceBody').innerHTML=`
+    <div class="card" style="margin-bottom:16px"><h3>练习清单</h3>${ex.map(x=>{
+      const st=(state.ex[x.id]||0);const b1=st===1?'s1':'';const b2=st===2?'s2':'';
+      return `<div class="ex-item"><div class="t-body"><div class="ex-title">${x.title}</div><div class="ex-meta">${x.diff} · ${x.tag}</div></div>
+      <div class="status"><button class="${b1}" data-ex="${x.id}" data-st="1">进行中</button><button class="${b2}" data-ex="${x.id}" data-st="2">完成</button></div></div>`;}).join('')}
+      <div style="font-size:12px;color:var(--ink4)">更多练习：洛谷 luogu.com.cn · PTA pintia.cn · 中国大学MOOC icourse163.org</div></div>
+    <div class="card"><h3>GitHub 练手项目</h3>${gh.length?gh.map(g=>`
+      <a class="gh-item hoverable" href="${g.url}" target="_blank" rel="noopener">
+        <span class="pill" style="background:${SUB[sub].soft};color:${SUB[sub].color}">${SUB[sub].name}</span>
+        <div class="t-body"><div class="gh-name">${g.name} <span class="tag">${g.diff}</span></div><div class="gh-desc">${g.desc}</div></div>
+      </a>`).join(''):'<div style="color:var(--ink4)">该科目暂未收录项目</div>'}</div>`;
+  $$('#practiceBody [data-ex]').forEach(b=>b.addEventListener('click',()=>{
+    state.ex[b.dataset.ex]=parseInt(b.dataset.st);save(LS.ex,state.ex);renderPractice();toast('进度已更新');}));
+}
+
+/* ---------- roadmap ---------- */
+function nodeHtml(n){
+  const done=state.road[n.id];
+  return `<li><button class="tnode ${n.children?'branch':''} ${done?'done':''}" data-id="${n.id}">${n.label}</button>${n.children?`<ul>${n.children.map(nodeHtml).join('')}</ul>`:''}</li>`;
+}
+function treeCount(arr){let c=0;(function walk(a){a.forEach(n=>{c++;if(n.children)walk(n.children);});})(arr);return c;}
+function treeDone(n){let c=state.road[n.id]?1:0;if(n.children)n.children.forEach(x=>c+=treeDone(x));return c;}
+function renderRoadmap(){
+  $('#roadGrid').innerHTML=ROAD_TREES.map(t=>{
+    const done=t.nodes.reduce((s,n)=>s+treeDone(n),0), total=treeCount(t.nodes);
+    return `<div class="road-col"><h4>${t.title}</h4><p class="hint">${t.hint} · ${done}/${total}</p><ul class="tree">${t.nodes.map(n=>nodeHtml(n)).join('')}</ul></div>`;
+  }).join('');
+  $$('#roadGrid .tnode').forEach(b=>b.addEventListener('click',()=>{
+    const id=b.dataset.id;state.road[id]=!state.road[id];save(LS.road,state.road);renderRoadmap();
+  }));
+}
+
+/* ---------- review ---------- */
+const MOODS=[['😄','很顺'],['🙂','还行'],['😐','一般'],['😫','有点累'],['🔥','干劲十足']];
+let rvMood='';
+function renderMood(){
+  $('#moodRow').innerHTML=MOODS.map(m=>`<button class="mood ${rvMood===m[0]?'active':''}" data-m="${m[0]}">${m[0]}<span>${m[1]}</span></button>`).join('');
+  $$('#moodRow .mood').forEach(b=>b.addEventListener('click',()=>{rvMood=b.dataset.m;renderMood();}));
+}
+function stats(){
+  const tasksDone=state.tasks.filter(t=>t.done).length;
+  const exDone=Object.values(state.ex).filter(v=>v===2).length;
+  const roadDone=Object.values(state.road).filter(Boolean).length;
+  return [tasksDone,exDone,roadDone];
+}
+function renderStats(){
+  const [a,b,c]=stats();
+  $('#statRow').innerHTML=`<div class="stat"><div class="num" data-n="${a}">0</div><div class="lbl">已完成待办</div></div>
+    <div class="stat"><div class="num" data-n="${b}">0</div><div class="lbl">已完成练习</div></div>
+    <div class="stat"><div class="num" data-n="${c}">0</div><div class="lbl">已点亮节点</div></div>`;
+  countUp($$('#statRow .num'));
+}
+function countUp(els){els.forEach(el=>{const target=+el.dataset.n;const t0=performance.now();
+  (function step(t){const p=Math.min((t-t0)/700,1);el.textContent=Math.round(target*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(step);})(t0);});}
+function renderHistory(){
+  const el=$('#reviewHistory');
+  if(!state.reviews.length){el.innerHTML='';return;}
+  el.innerHTML='<h3 style="margin:0 0 10px;color:var(--ink);font-size:14px">历史复盘</h3>'+state.reviews.slice().reverse().map(r=>`
+    <div class="rv-item"><div class="rv-date">${r.mood||'📝'} ${r.date}</div>${r.win?`<p>✨ ${r.win}</p>`:''}${r.stuck?`<p>🧗 ${r.stuck}</p>`:''}${r.next?`<p>🎯 ${r.next}</p>`:''}</div>`).join('');
+}
+$('#rvSave').addEventListener('click',()=>{
+  const win=$('#rvWin').value.trim(),stuck=$('#rvStuck').value.trim(),next=$('#rvNext').value.trim();
+  if(!rvMood&&!win&&!stuck&&!next){toast('先写点内容再保存吧');return;}
+  state.reviews.push({id:uid(),date:fmtDate(),mood:rvMood,win,stuck,next});
+  save(LS.reviews,state.reviews);
+  rvMood='';renderMood();['rvWin','rvStuck','rvNext'].forEach(id=>$('#'+id).value='');
+  renderHistory();toast('复盘已保存 ✅');
+});
+$('#rvClear').addEventListener('click',()=>{rvMood='';renderMood();['rvWin','rvStuck','rvNext'].forEach(id=>$('#'+id).value='');toast('已清空');});
+
+/* ---------- plan ---------- */
+function renderGoals(){
+  const g=state.goals;
+  const mk=(arr,type)=>arr.map((t,i)=>`<div class="goal-card" style="align-items:center"><span style="flex:1">${t}</span><button class="t-del" data-g="${type}" data-i="${i}" title="删除"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>`).join('');
+  $('#nearGoals').innerHTML=mk(g.near,'near');
+  $('#farGoals').innerHTML=mk(g.far,'far');
+  $$('[data-g]').forEach(b=>b.addEventListener('click',()=>{const arr=b.dataset.g==='near'?g.near:g.far;arr.splice(+b.dataset.i,1);save(LS.goals,g);renderGoals();}));
+}
+function daysTo(d){const now=new Date();now.setHours(0,0,0,0);const t=new Date(d+'T00:00:00');return Math.round((t-now)/86400000);}
+function renderMs(){
+  const ms=state.goals.ms.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  $('#milestones').innerHTML=ms.map(m=>{const d=daysTo(m.date);const soon=d<=14;
+    return `<div class="m-item"><span class="pill" style="background:${soon?'var(--amber-soft)':'var(--accent-soft)'};color:${soon?'var(--amber-ink)':'var(--accent-ink)'}">${m.date}</span><span style="flex:1">${m.text}</span><span class="days ${soon?'soon':''}">${d>=0?`还有 ${d} 天`:`已过 ${-d} 天`}</span></div>`;}).join('');
+}
+$('#nearAdd').addEventListener('click',()=>{const v=$('#nearInput').value.trim();if(!v)return;state.goals.near.push(v);save(LS.goals,state.goals);$('#nearInput').value='';renderGoals();});
+$('#farAdd').addEventListener('click',()=>{const v=$('#farInput').value.trim();if(!v)return;state.goals.far.push(v);save(LS.goals,state.goals);$('#farInput').value='';renderGoals();});
+$('#msAdd').addEventListener('click',()=>{const t=$('#msText').value.trim(),d=$('#msDate').value;if(!t||!d)return;state.goals.ms.push({id:uid(),text:t,date:d});save(LS.goals,state.goals);$('#msText').value='';$('#msDate').value='';renderMs();});
+
+/* ---------- library ---------- */
+function renderLibTabs(){
+  const cur=state._libCat||'all';
+  $('#libTabs').innerHTML=Object.keys(LIB_CATS).map(k=>`<button class="tab ${cur===k?'active':''}" data-cat="${k}">${LIB_CATS[k]}</button>`).join('');
+  $$('#libTabs .tab').forEach(b=>b.addEventListener('click',()=>{state._libCat=b.dataset.cat;renderLibTabs();renderLibrary();}));
+}
+function renderLibrary(){
+  const cat=state._libCat||'all';
+  const list=state.library.filter(x=>cat==='all'||x.cat===cat);
+  const el=$('#libList');
+  if(!list.length){el.innerHTML='<div style="color:var(--ink4);text-align:center;padding:24px 0">这个分类还没有内容，用上面的表单添加一条吧 📚</div>';return;}
+  el.innerHTML=list.map(x=>{
+    const c=LIB_CATS[x.cat]||x.cat;
+    const open=x.link?`<a class="lib-open" href="${x.link}" target="_blank" rel="noopener">打开 ↗</a>`:'<span class="tag">未填链接</span>';
+    return `<div class="lib-item"><span class="pill" style="background:var(--accent-soft);color:var(--accent-ink)">${c}</span><div class="lib-body"><div class="lib-name">${x.name}${open}</div>${x.note?`<div class="lib-note">${x.note}</div>`:''}</div><button class="lib-del" data-id="${x.id}" title="删除"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>`;}).join('');
+  $$('#libList .lib-del').forEach(b=>b.addEventListener('click',()=>{
+    state.library=state.library.filter(x=>x.id!==b.dataset.id);
+    save(LS.library,state.library);localStorage.setItem('wb_lib_ver',LIB_VERSION);renderLibrary();toast('已删除');
+  }));
+}
+$('#libAdd').addEventListener('click',()=>{
+  const name=$('#libName').value.trim();if(!name)return;
+  state.library.push({id:uid(),cat:$('#libCat').value,name,link:$('#libLink').value.trim(),note:$('#libNote').value.trim()});
+  save(LS.library,state.library);localStorage.setItem('wb_lib_ver',LIB_VERSION);
+  $('#libName').value='';$('#libLink').value='';$('#libNote').value='';
+  renderLibrary();toast('已添加资源');
+});
+
+/* ---------- data tools ---------- */
+$('#exportBtn').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify({tasks:state.tasks,ex:state.ex,road:state.road,reviews:state.reviews,goals:state.goals,library:state.library},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='工作台备份-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast('已导出备份');
+});
+$('#importBtn').addEventListener('click',()=>$('#importFile').click());
+$('#importFile').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);
+    ['tasks','ex','road','reviews','goals','library'].forEach(k=>{if(d[k]!==undefined)state[k]=d[k];});
+    Object.keys(LS).forEach(k=>{if(d[k]!==undefined)save(LS[k],d[k]);});
+    renderAll();toast('导入成功');}catch(err){toast('导入失败：文件格式错误');}};
+  r.readAsText(f);e.target.value='';
+});
+$('#resetBtn').addEventListener('click',()=>{
+  if(!confirm('确定要清空本地数据并恢复内置内容吗？'))return;
+  Object.values(LS).forEach(k=>localStorage.removeItem(k));
+  state.tasks=[];state.ex={};state.road={};state.reviews=[];state.goals={near:SEED_GOALS.near,far:SEED_GOALS.far,ms:SEED_MS};
+  state.library=SEED_LIBRARY;
+  renderAll();toast('已恢复内置内容');
+});
+
+function renderAll(){
+  $('#todayDate').textContent=fmtDate();
+  renderFilters();renderTasks();
+  renderPracticeTabs();renderPractice();
+  renderRoadmap();
+  renderLibTabs();renderLibrary();
+  renderMood();renderStats();renderHistory();
+  renderGoals();renderMs();
+}
+renderAll();
+</script>
+</body>
+</html>
